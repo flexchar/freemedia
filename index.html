@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="lukas-app" ng-controller="Ctrl as app">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="description" content="Whether you are looking for free background music for your YouTube videos or great quality visual footage clips for montage, we got your back. Use this list to find great artists, producers and media for your very special video.">
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+	<title>Browsing {{ca}} | Free Music & Footage for YouTube videos</title>
+	<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Roboto:400,700'>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.4/angular-material.min.css"/>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material-data-table/0.10.10/md-data-table.min.css"/>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
+	<link rel="shortcut icon" href="ico.png"/>
+	<link rel="favicon" href="ico.png"/>
+
+	<style type="text/css">
+		.row-hover:hover {
+    		background-color: #eee!important
+		}
+	</style>
+</head>
+
+<body ng-cloak  ng-init="myLimit = 10; myPage = 1; myFootageLimit = 10; myFootagePage = 1; ca = 'music';">
+
+	<div layout="column" layout-fill>
+
+		<md-toolbar class="md-whiteframe-z2" md-scroll-shrink="true">
+			<div class="md-toolbar-tools">
+				<h1 class="md-title" md-truncate>Free Music & Footage</h1>
+				<span flex></span>				
+				<md-button class="md-icon-button" ng-click="app.fetchData(ca)">
+			  		<md-icon style="opacity: .01;">refresh</md-icon>
+				</md-button>
+				<md-button class="md-default md-raised" ng-click="ca='footage'" ng-show="ca=='music'">Music</md-button>
+				<md-button class="md-default md-raised" ng-click="ca='music'" ng-show="ca=='footage'">Footage</md-button>
+				<span></span>
+			</div>
+		</md-toolbar>			
+
+		<md-content>
+
+			<md-card>
+				<md-toolbar class="md-table-toolbar md-default">
+					<div class="md-toolbar-tools">
+						<md-icon>search</md-icon>
+						<input type="text" ng-model="myFilter" placeholder="Start typing..." 
+						style="width: 100%; margin: 0; color: rgba(0,0,0,.54); padding: 0 10px 0 10px; border: none; outline: none;">
+						<md-button class="md-icon-button" ng-click="myFilter = undefined;" ng-show="myFilter != null && myFilter">
+							<md-icon>close</md-icon>
+						</md-button>
+					</div>
+				</md-toolbar>
+
+					<md-table-container>
+						<table md-table md-progress="app.loading" ng-if="ca=='music'">
+							<thead md-head md-order="myOrder">
+								<tr md-row>									
+									<th md-column md-order-by="publisher">Publisher / Producer</th>
+									<th md-column hide-xs hide-sm>Notes (if any)</th>
+									<th md-column hide-xs>Source</th>
+									<th md-column md-numeric md-order-by="timestamp" hide-xs>Timestamp</th>
+								</tr>
+							</thead>
+							<tbody md-body>
+								<tr md-row ng-repeat="e in app.musicDB | filter: myFilter | orderBy: myOrder | limitTo: myLimit: (myPage - 1) * myLimit" 
+									class="row-hover">
+									<td md-cell>{{e.publisher}}</td>
+									<td md-cell hide-xs hide-sm ng-bind-html="e.info | linky:'_blank'"></td>
+									<td md-cell hide-xs><a ng-href="{{e.source}}" target="_blank">{{e.source}}</a></td>
+									<td md-cell hide-xs>{{e.timestamp | date:mediumDate}}</td>
+								</tr>
+							</tbody>
+						</table>
+						<!-- MULTI-Table-Seperator -->
+						<table md-table md-progress="app.loading" ng-if="ca=='footage'">
+							<thead md-head md-order="myFootageOrder">
+								<tr md-row>									
+									<th md-column md-order-by="provider">Provider</th>
+									<th md-column md-order-by="type">Type</th>
+									<th md-column md-order-by="attribution">Attribution</th>
+									<th md-column md-order-by="info" hide-xs hide-sm>Licence</th>
+									<th md-column hide-xs>Source</th>
+									<th md-column md-numeric md-order-by="timestamp" hide-xs>Timestamp</th>
+								</tr>
+							</thead>
+							<tbody md-body>
+								<tr md-row ng-repeat="e in app.footageDB | filter: myFilter | orderBy: myFootageOrder | limitTo: myFootageLimit: (myFootagePage - 1) * myFootageLimit" 
+									class="row-hover">
+									<td md-cell>{{e.provider}}</td>
+									<td md-cell>{{e.type}}</td>
+									<td md-cell>{{e.attribution}}</td>
+									<td md-cell hide-xs hide-sm>{{e.info}}</td>
+									<td md-cell hide-xs><a ng-href="{{e.source}}" target="_blank">{{e.source}}</a></td>
+									<td md-cell hide-xs>{{e.timestamp | date:mediumDate}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</md-table-container>
+					<md-table-pagination ng-show="ca=='music'" md-limit="myLimit" md-limit-options="[10, 50, 100, 500]" md-page="myPage" md-total="{{myFilter?(app.musicDB|filter:myFilter).length:app.musicDB.length}}" md-on-paginate="myPage" md-page-select></md-table-pagination>
+					<!-- MULTI-Table-Seperator -->
+					<md-table-pagination ng-show="ca=='footage'" md-limit="myFootageLimit" md-limit-options="[10, 50, 100, 500]" md-page="myFootagePage" md-total="{{myFilter?(app.footageDB|filter:myFilter).length:app.footageDB.length}}" md-on-paginate="myFootagePage" md-page-select></md-table-pagination>
+			</md-card>
+
+			<footer layout-padding layout="row" layout-align="start center">
+				<div style="opacity: .6">© All Rights Reserved | Made with ♥ by Lukas!</div>
+			</footer>
+
+		</md-content>
+
+		<md-button class="md-fab md-fab-bottom-right" ng-click="app.showFeedback()">
+			<md-tooltip md-direction="left" md-autohide="true">
+				Contact Us
+			</md-tooltip>
+			<md-icon>email_outline</md-icon>
+		</md-button>
+
+	</div>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular-aria.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular-animate.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular-messages.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular-sanitize.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.4/angular-material.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material-data-table/0.10.10/md-data-table.min.js"></script>
+	<script type="text/javascript">    
+		angular.module('lukas-app', ['ngMaterial','md.data.table','ngSanitize'])
+
+		.config(function($mdThemingProvider) {
+			$mdThemingProvider.theme('default')
+				.primaryPalette('blue')
+				.accentPalette('deep-purple')
+				.warnPalette('deep-orange');
+		})
+
+		.controller('Ctrl', function($http, $timeout, $q, $mdDialog, $mdToast) {
+			'use strict';
+			var self = this;
+
+			var musicSpreadsheetId = "1PumydP6Eb-FoG-tZ9BAy7Obs9BKEKJVTIJVX3yeJuQU";
+			var footageSpreadsheetId = "1tA_Nu1O-OnoxfJ8_G0V-QftiEU-0__d4aamfHshzpmI";
+
+			self.musicDB = [];
+			self.footageDB = [];
+
+			self.fetchData = function(target=null) {
+
+				var cleanData = function(data, type){
+
+					var parseMusicDB = function(entry) {
+						var publisher = entry['gsx$publisher']['$t'];
+						var info = entry['gsx$qualificationsinfo']['$t'];
+						var source = entry['gsx$source']['$t'];
+						var timestamp = entry['gsx$timestamp']['$t'];
+						return {
+							publisher: publisher,
+							info: info,
+							source: source,
+							timestamp: timestamp
+						};
+					}
+
+					var parseFootageDB = function(entry) {
+						var provider = entry['gsx$provider']['$t'];
+						var type = entry['gsx$type']['$t'];
+						var attribution = entry['gsx$attribution']['$t'];
+						var info = entry['gsx$notesqualificationslicense']['$t'];
+						var source = entry['gsx$source']['$t'];
+						var timestamp = entry['gsx$timestamp']['$t'];
+						return {
+							provider: provider,
+							type: type,
+							attribution: attribution,
+							info: info,
+							source: source,
+							timestamp: timestamp
+						};
+					}
+
+					if (type == "music" || type == null) {
+
+						self.musicDB = [];
+
+						angular.forEach(data, function(value) {
+				    		self.musicDB.push(parseMusicDB(value));
+						});
+					}
+
+					if (type == "footage") {
+
+						self.footageDB = [];
+
+						angular.forEach(data, function(value) {
+				    		self.footageDB.push(parseFootageDB(value));
+						});
+					}
+
+			    	//console.log("Done cleaning data!");
+			    	deferred.resolve();
+				};
+
+				var deferred = $q.defer();
+				self.loading = deferred.promise;
+
+				$http.get('https://spreadsheets.google.com/feeds/list/'+(target=="footage"?footageSpreadsheetId:musicSpreadsheetId)+'/1/public/values?alt=json').then(
+					function(res){
+
+						var dbCallback = res.data.feed['entry'];
+
+						//console.log("Done fetching data! (" + dbCallback.length + ")");
+
+						cleanData(dbCallback, target);
+
+					}, function(res){
+						console.log('Failed! '+ res.statusText);
+			    		deferred.resolve(); 
+					});
+			}
+			self.fetchData('music');
+			self.fetchData('footage');
+
+			var sendMail = function(data){
+				$http.post('https://formspree.io/'+email, data).then(function(res) {
+					if (res.data.success == "email sent") {
+						$mdToast.show(
+							$mdToast.simple()
+							.textContent('Successfully Sent!')
+							.position("bottom left")
+							.hideDelay(4500)
+						);
+					}
+
+				}, function(res) {
+					console.log("Error: "+res.statusText +' | '+ res.status);
+				});
+			};
+
+			var email="lukas@sperohub.com";
+
+			self.showFeedback = function(ev) {
+					$mdDialog.show({
+					controller: feedbackCtrl,
+					controllerAs: 'app',
+					templateUrl: 'form.html',
+					parent: angular.element(document.body),
+					targetEvent: ev,
+					clickOutsideToClose: false,
+					fullscreen: true
+				}).then(function(form) {
+					var mailData = {
+						'name' 	  : form.name,
+						'_replyto': form.email,
+						'_subject': 'Contact | YouTube Resources Free Media',
+						'message' : form.body 
+					};
+					if (!form.sec) {
+						sendMail(mailData);
+					}
+
+				}, function() {
+					//console.log('Dialog Closed.');
+				});
+			};
+
+			function feedbackCtrl($mdDialog) {
+				var self = this;
+
+			    self.hide = function() {
+			      $mdDialog.hide();
+			    };
+
+			    self.cancel = function() {
+			      $mdDialog.cancel();
+			    };
+
+			    self.answer = function(answer) {
+			      $mdDialog.hide(answer);
+			    };
+		  	}
+		});
+	</script>
+</body>
+</html>
